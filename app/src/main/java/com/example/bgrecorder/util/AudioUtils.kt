@@ -3,31 +3,47 @@ import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
+import android.util.Log
 import java.io.File
 import java.nio.ByteBuffer
 
 fun trimAudio(inputFile: File, trimStartMs: Long, trimEndMs: Long, context: Context): File? {
     val outputFile = File(context.cacheDir, "trimmed_${System.currentTimeMillis()}.m4a")
     val extractor = MediaExtractor()
+    var muxer: MediaMuxer? = null
+    var muxerStarted = false
+
     try {
         extractor.setDataSource(inputFile.absolutePath)
         val trackIndex = selectAudioTrack(extractor)
-        if (trackIndex < 0) return null
+        if (trackIndex < 0) {
+            Log.e("AudioTrim", "No audio track found.")
+            return null
+        }
         extractor.selectTrack(trackIndex)
 
         val format = extractor.getTrackFormat(trackIndex)
-        val muxer = MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-        val muxerTrackIndex = muxer.addTrack(format)
-        muxer.start()
+        val mime = format.getString(MediaFormat.KEY_MIME)
+        if (mime?.startsWith("audio/mp4a-latm") != true) {
+            Log.e("AudioTrim", "Unsupported audio format: $mime")
+            return null
+        }
+
+        val startUs = trimStartMs * 1000
+        val endUs = (format.getLong(MediaFormat.KEY_DURATION) - trimEndMs) * 1000
+
+        Log.d("AudioTrim", "Trim startUs=$startUs, endUs=$endUs, durationUs=${format.getLong(MediaFormat.KEY_DURATION)}")
+
+        extractor.seekTo(startUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
 
         val maxBufferSize = format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)
         val buffer = ByteBuffer.allocate(maxBufferSize)
-        val bufferInfo = android.media.MediaCodec.BufferInfo()
+        val bufferInfo = MediaCodec.BufferInfo()
 
-        val startUs = trimStartMs * 1000
-        val endUs = (inputFile.length() - trimEndMs) * 1000
-
-        extractor.seekTo(startUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
+        muxer = MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+        val muxerTrackIndex = muxer.addTrack(format)
+        muxer.start()
+        muxerStarted = true
 
         while (true) {
             val sampleTime = extractor.sampleTime
@@ -35,64 +51,87 @@ fun trimAudio(inputFile: File, trimStartMs: Long, trimEndMs: Long, context: Cont
 
             bufferInfo.offset = 0
             bufferInfo.size = extractor.readSampleData(buffer, 0)
-            bufferInfo.presentationTimeUs = sampleTime
-            bufferInfo.flags = MediaCodec.BUFFER_FLAG_SYNC_FRAME
+            if (bufferInfo.size < 0) break
 
+            bufferInfo.presentationTimeUs = sampleTime
+            bufferInfo.flags = extractor.sampleFlags
+
+            Log.d("AudioTrim", "Sample time: $sampleTime, startUs: $startUs, endUs: $endUs")
             muxer.writeSampleData(muxerTrackIndex, buffer, bufferInfo)
             extractor.advance()
         }
 
-        muxer.stop()
-        muxer.release()
-        extractor.release()
         return outputFile
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e("AudioTrim", "Error trimming audio", e)
         return null
+    } finally {
+        try {
+            if (muxerStarted) muxer?.stop()
+        } catch (e: IllegalStateException) {
+            Log.e("AudioTrim", "Failed to stop muxer", e)
+        }
+        try {
+            muxer?.release()
+        } catch (e: Exception) {
+            Log.e("AudioTrim", "Failed to release muxer", e)
+        }
+        extractor.release()
     }
 }
 
 fun concatenateAudioFiles(inputFiles: List<File>, outputFile: File): Boolean {
-    if (inputFiles.isEmpty()) return false
+    if (inputFiles.isEmpty() || inputFiles.any { !it.exists() }) {
+        Log.e("AudioUtils", "Input files are missing or empty.")
+        return false
+    }
 
-    val muxer = MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-
+    var muxer: MediaMuxer? = null
+    var muxerStarted = false
     var trackIndex = -1
     var lastPresentationTimeUs = 0L
 
-    val buffer = ByteBuffer.allocate(1024 * 1024) // 1MB buffer
-    val bufferInfo = android.media.MediaCodec.BufferInfo()
+    val buffer = ByteBuffer.allocate(1024 * 1024)
+    val bufferInfo = MediaCodec.BufferInfo()
 
     try {
+        muxer = MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+
         for (file in inputFiles) {
             val extractor = MediaExtractor()
             extractor.setDataSource(file.absolutePath)
             val audioTrackIndex = selectAudioTrack(extractor)
+
             if (audioTrackIndex < 0) {
+                Log.w("AudioUtils", "No audio track in file: ${file.name}")
                 extractor.release()
                 continue
             }
+
             extractor.selectTrack(audioTrackIndex)
             val format = extractor.getTrackFormat(audioTrackIndex)
 
             if (trackIndex == -1) {
                 trackIndex = muxer.addTrack(format)
                 muxer.start()
+                muxerStarted = true
             }
 
-            var sampleTime: Long
             var firstSampleTimeInFile = -1L
-
             while (true) {
-                sampleTime = extractor.sampleTime
+                val sampleTime = extractor.sampleTime
                 if (sampleTime == -1L) break
 
-                if (firstSampleTimeInFile == -1L) firstSampleTimeInFile = sampleTime
+                if (firstSampleTimeInFile == -1L) {
+                    firstSampleTimeInFile = sampleTime
+                }
 
                 bufferInfo.offset = 0
                 bufferInfo.size = extractor.readSampleData(buffer, 0)
+                if (bufferInfo.size < 0) break
+
                 bufferInfo.presentationTimeUs = lastPresentationTimeUs + (sampleTime - firstSampleTimeInFile)
-                bufferInfo.flags = MediaCodec.BUFFER_FLAG_SYNC_FRAME
+                bufferInfo.flags = extractor.sampleFlags
 
                 muxer.writeSampleData(trackIndex, buffer, bufferInfo)
                 extractor.advance()
@@ -102,13 +141,27 @@ fun concatenateAudioFiles(inputFiles: List<File>, outputFile: File): Boolean {
             extractor.release()
         }
 
-        muxer.stop()
-        muxer.release()
+        if (!muxerStarted) {
+            Log.e("AudioUtils", "Muxer was never started — no valid input files")
+            muxer?.release()
+            return false
+        }
+
         return true
     } catch (e: Exception) {
-        e.printStackTrace()
-        try { muxer.release() } catch (_: Exception) {}
+        Log.e("AudioUtils", "Failed to concatenate audio files", e)
         return false
+    } finally {
+        try {
+            if (muxerStarted) muxer?.stop()
+        } catch (e: Exception) {
+            Log.e("AudioUtils", "Failed to stop muxer", e)
+        }
+        try {
+            muxer?.release()
+        } catch (e: Exception) {
+            Log.e("AudioUtils", "Failed to release muxer", e)
+        }
     }
 }
 

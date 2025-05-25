@@ -3,6 +3,7 @@ package com.example.bgrecorder.ui.layout
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -40,7 +41,8 @@ class SaveRecordingFragment: Fragment(R.layout.fragment_save_recording) {
                 R.id.button_save_recording -> {
                     val recordingName = textInput.text.toString()
                     val timeRange = slider.values
-                    val (startMillis, endMillis) = timeRange
+                    val startMillis = System.currentTimeMillis() - (timeRange[1] * 60 * 1000).toLong()
+                    val endMillis = System.currentTimeMillis() - (timeRange[0] * 60 * 1000).toLong()
 
                     if (recordingName.isBlank()) {
                         androidx.appcompat.app.AlertDialog.Builder(requireContext())
@@ -65,15 +67,35 @@ class SaveRecordingFragment: Fragment(R.layout.fragment_save_recording) {
                     val all = MetadataManager.loadMetadata(context)
                     val selected = all.filter { it.endTime > startMillis && it.startTime < endMillis }
 
-                    val trimmedFiles = selected.mapNotNull {
-                        val trimStart = maxOf(startMillis.toInt(), it.startTime.toInt()) - it.startTime
-                        val trimEnd = it.endTime - minOf(endMillis.toInt(), it.endTime.toInt())
-                        trimAudio(File(it.filePath), trimStart, trimEnd, context)
+                    Log.d("AudioUtils", "Range: $startMillis - $endMillis")
+
+                    all.forEach {
+                        Log.d("AudioUtils", "Checking metadata: ${it.startTime} - ${it.endTime}, path: ${it.filePath}")
                     }
 
-                    println(context.getExternalFilesDir(null))
+                    Log.d("AudioUtils", "Selected intervals: ${selected.size}")
+
+                    val trimmedFiles = selected.mapNotNull {
+                        val relativeStart = maxOf(startMillis, it.startTime) - it.startTime
+                        val relativeEnd = minOf(endMillis, it.endTime) - it.startTime
+
+                        if (relativeEnd > relativeStart) {
+                            val file = File(it.filePath)
+                            Log.d("AudioUtils", "Trimming file: ${file.absolutePath} from $relativeStart to $relativeEnd")
+                            trimAudio(file, relativeStart, relativeEnd, context)
+                        } else {
+                            Log.d("AudioUtils", "Invalid trim range for file ${it.filePath}: start=$relativeStart, end=$relativeEnd")
+                            null
+                        }
+                    }
+
+                    trimmedFiles.forEach {
+                        Log.d("AudioUtils", "Trimmed file: ${it.absolutePath}, exists: ${it.exists()}")
+                    }
+
                     val output = File(context.getExternalFilesDir(null), "$recordingName.m4a")
                     val success = concatenateAudioFiles(trimmedFiles, output)
+                    Log.d("AudioUtils", "Output file path: ${output.absolutePath}")
 
                     androidx.appcompat.app.AlertDialog.Builder(requireContext())
                         .setTitle(R.string.error)
