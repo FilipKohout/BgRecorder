@@ -8,7 +8,13 @@
     <string name="placeholder">Placeholder</string>
     <string name="recording_options">Recording options</string>
     <string name="recording_name">Recording Name</string>
-    <string name="_00_00">00:00</string>
     <string name="save_recording">Save Recording</string>
     <string name="play_recording">Play recording</string>
+    <string name="start_recording">Start recording</string>
+    <string name="time_available">5h 30m available</string>
+    <string name="last_time_range">Last %02d:%02d - %02d:%02d</string>
+    <string name="save">Save</string>
+    <string name="error_empty_recording_name">Please name your recording</string>
+    <string name="error_invalid_time_range">Invalid time range</string>
+    <string name="error">Error</string>
 </resources>

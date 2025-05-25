@@ -45,7 +45,7 @@ app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large">
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_more_vert"
+            android:src="@drawable/ic_more_vert_24dp"
             android:contentDescription="@string/recording_options"
             app:tint="?attr/colorOnSurface" />
     </LinearLayout>
@@ -58,13 +58,13 @@ app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large">
         android:gravity="center_vertical"
         android:layout_marginTop="6dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             style="?attr/materialIconButtonFilledStyle"
             android:id="@+id/iconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/play_recording"
-            app:icon="@drawable/ic_play"
+            app:icon="@drawable/ic_play_24dp"
             />
 
         <LinearLayout
@@ -92,7 +92,7 @@ app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large">
                     android:id="@+id/recording_duration"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/_00_00"
+                    android:text="00:00"
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?attr/colorOnSurfaceVariant" />
             </LinearLayout>

@@ -8,19 +8,22 @@ import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.example.bgrecorder.manager.MetadataManager
+import com.example.bgrecorder.model.RecordingMetadata
 import java.io.File
 
-@RequiresApi(Build.VERSION_CODES.O)
 class AudioRecordingService : Service() {
 
     private var recorder: MediaRecorder? = null
     private var outputFile: File? = null
+    private var startTime: Long = System.currentTimeMillis()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(1, createNotification())
 
         val dir = File(filesDir, "recordings").apply { mkdirs() }
-        outputFile = File(dir, "\${System.currentTimeMillis()}.m4a")
+        outputFile = File(dir, "${System.currentTimeMillis()}.m4a")
+        startTime = System.currentTimeMillis()
 
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -39,6 +42,9 @@ class AudioRecordingService : Service() {
             stop()
             release()
         }
+
+        val endTime = System.currentTimeMillis()
+        MetadataManager.saveMetadata(this, RecordingMetadata(outputFile!!.absolutePath, startTime, endTime))
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

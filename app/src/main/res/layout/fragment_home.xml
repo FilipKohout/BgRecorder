@@ -6,60 +6,58 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.layout.HomeFragment">
+    tools:context=".ui.layout.HomeFragment"
+    android:layout_marginHorizontal="@dimen/screen_horizontal_margin">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textinputlayout_recording_name"
-        android:layout_width="0dp"
+
+    <com.google.android.material.button.MaterialButton
+        style="?attr/materialIconButtonFilledStyle"
+        android:id="@+id/button_record"
+        android:backgroundTint="?attr/colorPrimary"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:padding="24dp"
+        app:icon="@drawable/ic_mic_64dp"
+        app:iconSize="64dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edittext_recording_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/recording_name"
-            android:maxLines="1"
-            android:inputType="text"
-            android:singleLine="true"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.slider.Slider
-        android:id="@+id/recording_slider"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:valueFrom="1"
-        android:valueTo="60"
-        android:stepSize="1"
-        android:value="10"
-        app:layout_constraintTop_toBottomOf="@id/textinputlayout_recording_name"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp" />
+        />
 
     <TextView
-        android:id="@+id/slider_time_label"
+        android:id="@+id/text_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="@string/_00_00"
+        android:text="@string/start_recording"
         android:textAppearance="?attr/textAppearanceBody1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recording_slider" />
+        app:layout_constraintTop_toBottomOf="@id/button_record" />
 
     <com.google.android.material.button.MaterialButton
+        style="@style/Widget.Material3.Button.Icon"
         android:id="@+id/button_save_recording"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="@string/save_recording"
-        app:layout_constraintTop_toBottomOf="@id/slider_time_label"
+        android:textSize="18sp"
+        app:icon="@drawable/ic_add_24dp"
+        app:layout_constraintTop_toBottomOf="@id/text_status"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp"
-        android:enabled="false"
-        />
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/text_available_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/time_available"
+        android:textColor="?android:textColorSecondary"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/button_save_recording"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
