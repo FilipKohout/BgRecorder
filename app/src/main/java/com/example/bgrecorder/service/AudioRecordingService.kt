@@ -4,11 +4,9 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.media.MediaRecorder
-import android.os.Build
 import android.os.IBinder
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import com.example.bgrecorder.manager.MetadataManager
+import com.example.bgrecorder.manager.RecordingMetadataManager
 import com.example.bgrecorder.model.RecordingMetadata
 import java.io.File
 
@@ -44,7 +42,7 @@ class AudioRecordingService : Service() {
         }
 
         val endTime = System.currentTimeMillis()
-        MetadataManager.saveMetadata(this, RecordingMetadata(outputFile!!.absolutePath, startTime, endTime))
+        RecordingMetadataManager.saveMetadata(this, RecordingMetadata(outputFile!!.absolutePath, startTime, endTime))
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

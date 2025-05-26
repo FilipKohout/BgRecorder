@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
 
-object MetadataManager {
+object RecordingMetadataManager {
     private const val METADATA_FILE = "recordings_metadata.json"
     private val gson = Gson()
 

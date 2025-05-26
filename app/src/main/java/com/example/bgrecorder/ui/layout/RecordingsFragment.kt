@@ -7,20 +7,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bgrecorder.R
 import com.example.bgrecorder.adapter.RecordingsAdapter
-import com.example.bgrecorder.model.Recording
+import com.example.bgrecorder.manager.SavedRecordingsManager.loadRecordings
+import com.example.bgrecorder.model.SavedRecording
 
 class RecordingsFragment : Fragment(R.layout.fragment_recordings) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val recordings = listOf(
-            Recording("Záznam 1"),
-            Recording("Záznam 2"),
-            Recording("Záznam 3")
-        )
-
+        val savedRecordings = loadRecordings(requireContext())
         val recyclerView = view.findViewById<RecyclerView>(R.id.recordings_list)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = RecordingsAdapter(recordings)
+        recyclerView.adapter = RecordingsAdapter(savedRecordings)
     }
 }

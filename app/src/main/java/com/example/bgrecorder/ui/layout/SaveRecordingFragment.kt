@@ -1,23 +1,21 @@
 package com.example.bgrecorder.ui.layout
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.bgrecorder.R
-import com.example.bgrecorder.manager.MetadataManager
-import com.example.bgrecorder.model.RecordingMetadata
+import com.example.bgrecorder.manager.RecordingMetadataManager
+import com.example.bgrecorder.manager.SavedRecordingsManager.saveRecording
+import com.example.bgrecorder.model.SavedRecording
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.slider.RangeSlider
-import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputEditText
 import concatenateAudioFiles
 import trimAudio
 import java.io.File
+import java.util.Date
 
 class SaveRecordingFragment: Fragment(R.layout.fragment_save_recording) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -64,7 +62,7 @@ class SaveRecordingFragment: Fragment(R.layout.fragment_save_recording) {
                     }
 
                     val context = requireContext()
-                    val all = MetadataManager.loadMetadata(context)
+                    val all = RecordingMetadataManager.loadMetadata(context)
                     val selected = all.filter { it.endTime > startMillis && it.startTime < endMillis }
 
                     Log.d("AudioUtils", "Range: $startMillis - $endMillis")
@@ -97,11 +95,15 @@ class SaveRecordingFragment: Fragment(R.layout.fragment_save_recording) {
                     val success = concatenateAudioFiles(trimmedFiles, output)
                     Log.d("AudioUtils", "Output file path: ${output.absolutePath}")
 
-                    androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                        .setTitle(R.string.error)
-                        .setMessage(success.toString())
-                        .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                        .show()
+                    saveRecording(
+                        context,
+                        SavedRecording(
+                            recordingName,
+                            (endMillis - startMillis).toInt(),
+                            output.absolutePath,
+                            Date(endMillis)
+                        )
+                    )
 
                     parentFragmentManager.popBackStack()
                     true

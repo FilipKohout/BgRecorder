@@ -60,7 +60,7 @@ app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large">
 
         <com.google.android.material.button.MaterialButton
             style="?attr/materialIconButtonFilledStyle"
-            android:id="@+id/iconButton"
+            android:id="@+id/button_play"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/play_recording"
