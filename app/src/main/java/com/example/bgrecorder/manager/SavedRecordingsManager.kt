@@ -11,9 +11,21 @@ object SavedRecordingsManager {
     private const val METADATA_FILE = "saved_recordings.json"
     private val gson = Gson()
 
-    fun saveRecording(context: Context, metadata: SavedRecording) {
+    fun saveRecording(context: Context, recording: SavedRecording) {
         val metadataList = loadRecordings(context).toMutableList()
-        metadataList.add(metadata)
+        metadataList.add(recording)
+
+        val json = gson.toJson(metadataList)
+        File(context.filesDir, METADATA_FILE).writeText(json)
+    }
+
+    fun deleteRecording(context: Context, recording: SavedRecording) {
+        val metadataList = loadRecordings(context).toMutableList()
+        metadataList.removeIf { it.path == recording.path }
+
+        val fileToDelete = File(recording.path)
+        if (fileToDelete.exists())
+            fileToDelete.delete()
 
         val json = gson.toJson(metadataList)
         File(context.filesDir, METADATA_FILE).writeText(json)

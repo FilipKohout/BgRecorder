@@ -104,7 +104,8 @@ app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large">
                 android:layout_marginTop="4dp"
                 style="@style/Widget.Material3.LinearProgressIndicator"
                 app:trackColor="?attr/colorSurfaceVariant"
-                app:indicatorColor="?attr/colorPrimary" />
+                app:indicatorColor="?attr/colorPrimary"
+                app:trackStopIndicatorSize="0dp"/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

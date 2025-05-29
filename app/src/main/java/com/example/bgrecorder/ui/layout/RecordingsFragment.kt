@@ -17,6 +17,6 @@ class RecordingsFragment : Fragment(R.layout.fragment_recordings) {
         val savedRecordings = loadRecordings(requireContext())
         val recyclerView = view.findViewById<RecyclerView>(R.id.recordings_list)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = RecordingsAdapter(savedRecordings)
+        recyclerView.adapter = RecordingsAdapter(savedRecordings.toMutableList())
     }
 }

@@ -2,4 +2,9 @@
 <resources>
 
     <style name="Theme.BgRecorder" parent="Theme.Material3.DynamicColors.DayNight"/>
+
+    <style name="MaterialPopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="popupMenuBackground">?attr/colorSurface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Medium</item>
+    </style>
 </resources>

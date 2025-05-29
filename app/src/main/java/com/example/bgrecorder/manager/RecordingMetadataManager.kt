@@ -16,7 +16,7 @@ object RecordingMetadataManager {
         val json = gson.toJson(metadataList)
         File(context.filesDir, METADATA_FILE).writeText(json)
     }
-
+    
     fun loadMetadata(context: Context): List<RecordingMetadata> {
         val file = File(context.filesDir, METADATA_FILE)
         if (!file.exists()) return emptyList()
