@@ -1,10 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.layout.SettingsFragment"
-    android:layout_marginHorizontal="@dimen/screen_horizontal_margin"
-    />
+    tools:context=".ui.layout.HomeFragment"
+    android:layout_marginHorizontal="@dimen/screen_horizontal_margin">
+    <TextView
+        android:id="@+id/time_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="30sp"
+        android:text="Recordings Deletion Time"
+        android:textAppearance="?attr/textAppearanceBody1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <com.google.android.material.slider.Slider
+        android:id="@+id/recording_slider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:valueFrom="10"
+        android:valueTo="24"
+        android:stepSize="1"
+        app:values="@array/slider_default_values"
+        app:layout_constraintTop_toBottomOf="@id/time_header"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>
